@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boss Pico Respawn - Sistema Avançado 3D & MIR4</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #0a0d14;
+            --bg-card: rgba(18, 24, 38, 0.88);
+            --accent-gold: #f59e0b;
+            --accent-gold-glow: rgba(245, 158, 11, 0.4);
+            --accent-cyan: #06b6d4;
+            --accent-cyan-glow: rgba(6, 182, 212, 0.4);
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --shadow-3d: 0 20px 40px -15px rgba(0, 0, 0, 0.7), 0 0 20px rgba(6, 182, 212, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(6, 182, 212, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 90% 80%, rgba(245, 158, 11, 0.08) 0%, transparent 40%),
+                linear-gradient(to bottom, #0a0d14, #05070a);
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.9));
+            border-bottom: 2px solid var(--accent-gold);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-area i {
+            font-size: 2.2rem;
+            color: var(--accent-gold);
+            filter: drop-shadow(0 0 10px var(--accent-gold-glow));
+        }
+
+        .logo-area h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 900;
+            background: linear-gradient(to right, #fff, var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 1px;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            border: 1px solid var(--border-color);
+            color: var(--text-main);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 6px 20px var(--accent-cyan-glow);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            border-color: var(--accent-gold);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            box-shadow: 0 6px 20px var(--accent-gold-glow);
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 280px 1fr 360px;
+            gap: 25px;
+        }
+
+        @media(max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-3d {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-3d);
+            backdrop-filter: blur(12px);
+            transform-style: preserve-3d;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+        }
+
+        .panel-3d:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-cyan-glow);
+            border-color: rgba(6, 182, 212, 0.3);
+        }
+
+        .floors-sidebar h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--accent-cyan);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .floor-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            max-height: 550px;
+            overflow-y: auto;
+            padding-right: 5px;
+        }
+
+        .floor-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+        .floor-grid::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 3px;
+        }
+
+        .floor-btn {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 14px 10px;
+            color: var(--text-main);
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .floor-btn span {
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text-muted);
+            font-weight: 400;
+        }
+
+        .floor-btn:hover {
+            background: rgba(6, 182, 212, 0.15);
+            border-color: var(--accent-cyan);
+            transform: scale(1.03);
+        }
+
+        .floor-btn.active {
+            background: linear-gradient(135deg, #0891b2, #0e7490);
+            border-color: #22d3ee;
+            color: #fff;
+            box-shadow: 0 0 20px var(--accent-cyan-glow);
+            transform: scale(1.05);
+        }
+
+        .map-section {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .map-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .map-container {
+            position: relative;
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 2px solid rgba(245, 158, 11, 0.3);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
+            background: #000;
+            min-height: 450px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .map-container img {
+            width: 100%;
+            height: auto;
+            display: block;
+            object-fit: contain;
+            filter: contrast(1.05) saturate(1.1);
+        }
+
+        .boss-marker {
+            position: absolute;
+            width: 42px;
+            height: 42px;
+            background: radial-gradient(circle, #f59e0b 0%, #b45309 100%);
+            border: 2px solid #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px var(--accent-gold-glow);
+            transition: all 0.3s ease;
+            z-index: 10;
+            transform: translate(-50%, -50%);
+        }
+
+        .boss-marker.dead {
+            background: radial-gradient(circle, #ef4444 0%, #7f1d1d 100%) !important;
+            border-color: #fca5a5;
+            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+        }
+
+        .boss-marker:hover {
+            transform: translate(-50%, -50%) scale(1.25);
+            box-shadow: 0 0 25px #f59e0b;
+        }
+
+        .boss-marker.dead:hover {
+            box-shadow: 0 0 25px #ef4444;
+        }
+
+        .boss-marker i {
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .respawn-tag {
+            position: absolute;
+            top: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--accent-red);
+            color: #fca5a5;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.65rem;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            white-space: nowrap;
+            pointer-events: none;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+            animation: pulseTag 1.5s infinite;
+        }
+
+        @keyframes pulseTag {
+            0% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.08); }
+            100% { transform: translateX(-50%) scale(1); }
+        }
+
+        .boss-tooltip {
+            position: absolute;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(10, 13, 20, 0.95);
+            border: 1px solid var(--accent-gold);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 20;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .boss-marker:hover .boss-tooltip {
+            opacity: 1;
+        }
+
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .ticket-section h3, .reservation-section h3 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.05rem;
+            margin-bottom: 12px;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .ticket-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .ticket-input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .ticket-input-group label {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .ticket-controls-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .ticket-select, .form-control {
+            width: 100%;
+            background: rgba(10, 13, 20, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 12px;
+            color: #fff;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .ticket-select:focus, .form-control:focus {
+            border-color: var(--accent-gold);
+            box-shadow: 0 0 10px var(--accent-gold-glow);
+        }
+
+        .ticket-summary-card {
+            background: rgba(245, 158, 11, 0.08);
+            border: 1px solid var(--accent-gold);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .ticket-summary-card h4 {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .ticket-total-time {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--accent-gold);
+            text-shadow: 0 0 10px var(--accent-gold-glow);
+        }
+
+        .ticket-countdown-sub {
+            font-size: 0.8rem;
+            color: var(--text-main);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .reservation-queue-list {
+            max-height: 180px;
+            overflow-y: auto;
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            padding-right: 4px;
+        }
+
+        .reservation-queue-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        .reservation-queue-list::-webkit-scrollbar-thumb {
+            background: rgba(255,255,255,0.2);
+            border-radius: 2px;
+        }
+
+        .queue-item {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .queue-item-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .queue-item-nick {
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            color: var(--accent-cyan);
+            font-size: 0.9rem;
+        }
+
+        .queue-item-time {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            background: #0f172a;
+            border: 1px solid var(--accent-gold);
+            border-radius: 20px;
+            width: 90%;
+            max-width: 650px;
+            padding: 30px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
+            position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-overlay.open .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+
+        .modal-header h2 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            color: var(--accent-gold);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .close-modal {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: color 0.2s;
+        }
+
+        .close-modal:hover {
+            color: #fff;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-muted);
+        }
+
+        .admin-item-list {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px;
+            background: rgba(10, 13, 20, 0.5);
+        }
+
+        .admin-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.9rem;
+            gap: 10px;
+        }
+
+        .admin-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-bar {
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-top: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.9rem;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1.1); }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <i class="fa-solid fa-dragon"></i>
+            <div>
+                <h1>MIR4 - BOSS PICO RESPAWN</h1>
+                <p style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">SISTEMA AVANÇADO 3D UNIFICADO</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <button class="btn" onclick="openGlobalTimerModal()"><i class="fa-solid fa-clock"></i> Timers Globais</button>
+            <button class="btn" onclick="resetAllBossesData()"><i class="fa-solid fa-rotate-right"></i> Resetar Todos</button>
+            <button class="btn btn-primary" onclick="openAdminModal()"><i class="fa-solid fa-shield-halved"></i> Painel Admin</button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Floors Sidebar (1F to 12F) -->
+        <div class="panel-3d floors-sidebar">
+            <h3><i class="fa-solid fa-layer-group"></i> Seleção de Andares</h3>
+            <div class="floor-grid" id="floorGrid"></div>
+        </div>
+
+        <!-- Central Map & Environment -->
+        <div class="map-section">
+            <div class="panel-3d" style="padding: 20px;">
+                <div class="map-header">
+                    <div class="map-title" id="currentFloorTitle">
+                        <i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar 1F - Boss Pico Respawn
+                    </div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);" id="activeBossCount">
+                        <i class="fa-solid fa-skull"></i> 8 Bosses Precisamente Mapeados
+                    </div>
+                </div>
+
+                <div class="map-container" id="mapContainer" style="margin-top: 15px;">
+                    <img src="Captura de tela 2026-09-02 103941_7.jpg" alt="Boss Pico Respawn Map">
+                    <div id="markersLayer"></div>
+                </div>
+
+                <div class="status-bar">
+                    <div class="status-indicator">
+                        <div class="dot"></div>
+                        <span>Sincronizado e Salvo via LocalStorage</span>
+                    </div>
+                    <div style="font-family: 'Orbitron', sans-serif; font-weight: 600; color: var(--accent-gold);" id="serverTime">
+                        00:00:00
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Ticket Selector & Player Reservations -->
+        <div class="right-column">
+            <!-- Ticket Quantity Selector -->
+            <div class="panel-3d ticket-section">
+                <h3><i class="fa-solid fa-ticket"></i> Seletor de Tickets</h3>
+                <div class="ticket-box">
+                    <div class="ticket-input-group">
+                        <label for="ticketQuantity">Quantidade de Tickets</label>
+                        <div class="ticket-controls-row">
+                            <select id="ticketQuantity" class="ticket-select" onchange="updateTicketCalculation()">
+                                <option value="1">1 Ticket (30 min)</option>
+                                <option value="2">2 Tickets (1 Hora)</option>
+                                <option value="3" selected>3 Tickets (1h 30m)</option>
+                                <option value="4">4 Tickets (2 Horas)</option>
+                                <option value="5">5 Tickets (2h 30m)</option>
+                                <option value="6">6 Tickets (3 Horas)</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="startTicketCountdown()">Ativar</button>
+                        </div>
+                    </div>
+
+                    <div class="ticket-summary-card">
+                        <h4>Tempo Total Acumulado</h4>
+                        <div class="ticket-total-time" id="totalTicketTime">01:30:00</div>
+                        <div class="ticket-countdown-sub" id="ticketCountdownStatus">Status: Pronto para ativar</div>
+                    </div>
+
+                    <button class="btn" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="resetTicketTimer()">Zerar / Reiniciar</button>
+                </div>
+            </div>
+
+            <!-- Player Reservation Area -->
+            <div class="panel-3d reservation-section">
+                <h3><i class="fa-solid fa-calendar-check"></i> Reserva <span id="currentFloorReservationLabel" style="color:var(--accent-cyan); font-size:0.9rem;">(1F)</span></h3>
+                <div class="ticket-box" style="margin-bottom: 0;">
+                    <div class="ticket-input-group">
+                        <label for="resPlayerNick">Seu Nick</label>
+                        <input type="text" id="resPlayerNick" class="form-control" placeholder="Ex: GuerreiroPRO">
+                    </div>
+                    <div class="ticket-input-group">
+                        <label for="resTicketCount">Quantidade de Tickets</label>
+                        <select id="resTicketCount" class="ticket-select">
+                            <option value="1">1 Ticket (30 min)</option>
+                            <option value="2">2 Tickets (1 Hora)</option>
+                            <option value="3" selected>3 Tickets (1h 30m)</option>
+                            <option value="4">4 Tickets (2 Horas)</option>
+                            <option value="5">5 Tickets (2h 30m)</option>
+                            <option value="6">6 Tickets (3 Horas)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="addReservation()">Cadastrar neste Andar</button>
+
+                    <div style="margin-top: 10px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
+                            <span>FILA DO ANDAR ATUAL</span>
+                            <span style="color: var(--accent-cyan); cursor: pointer;" onclick="clearCurrentFloorReservations()">Limpar Fila Deste Andar</span>
+                        </div>
+                        <div class="reservation-queue-list" id="reservationQueueList">
+                            <!-- Inserido dinamicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="modal-overlay" id="adminModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-shield-halved"></i> Painel Administrativo Completo</h2>
+                <button class="close-modal" onclick="closeAdminModal()">&times;</button>
+            </div>
+            <div id="adminAuthSection">
+                <div class="form-group">
+                    <label>Senha de Administrador</label>
+                    <input type="password" id="adminPassword" class="form-control" placeholder="Digite a senha (padrão: admin123)">
+                </div>
+                <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="verifyAdmin()">Entrar no Painel</button>
+            </div>
+
+            <div id="adminPanelContent" style="display: none;">
+                <p style="font-size: 0.85rem; color: var(--accent-green); margin-bottom: 15px;">
+                    <i class="fa-solid fa-circle-check"></i> Acesso Autorizado para o Andar: <span id="adminCurrentFloorLabel" style="font-family:'Orbitron'; font-weight:bold;">1F</span>
+                </p>
+                
+                <div class="form-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                    <label style="color: var(--accent-gold);"><i class="fa-solid fa-plus-circle"></i> Adicionar / Repor Novo Boss</label>
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="newBossName" class="form-control" placeholder="Nome do Boss">
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+                        <div>
+                            <label style="font-size: 0.75rem;">Posição Top (%)</label>
+                            <input type="text" id="newBossTop" class="form-control" value="50%">
+                        </div>
+                        <div>
+                            <label style="font-size: 0.75rem;">Posição Left (%)</label>
+                            <input type="text" id="newBossLeft" class="form-control" value="50%">
+                        </div>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 10px;">
+                        <label style="font-size: 0.75rem;">Tipo / Respawn</label>
+                        <select id="newBossType" class="form-control">
+                            <option value="common">Comum (30m / 1h por timer)</option>
+                            <option value="fixed_top">Vermelho Superior (16:00, 22:00, 04:00, 10:00)</option>
+                            <option value="fixed_bottom">Vermelho Inferior (13:00, 19:00, 01:00, 07:00)</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="addCustomBoss()">Adicionar Boss ao Mapa</button>
+                </div>
+
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>Gerenciar, Excluir ou Repor Bosses do Andar Atual</label>
+                    <div class="admin-item-list" id="adminBossList"></div>
+                </div>
+
+                <button class="btn" style="width: 100%; justify-content: center; margin-top: 15px; border-color: var(--accent-red); color: #fca5a5;" onclick="lockAdmin()">Bloquear Painel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Timer Modal -->
+    <div class="modal-overlay" id="globalTimerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fa-solid fa-clock"></i> Timers Fixos Oficiais dos Bosses Vermelhos</h2>
+                <button class="close-modal" onclick="closeGlobalTimerModal()">&times;</button>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
+                Ciclos exatos de 6 em 6 horas conforme indicados na imagem:
+            </p>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-family: 'Orbitron', sans-serif;">
+                <div style="background: rgba(239,68,68,0.1); padding: 14px; border-radius: 8px; text-align: center; border: 1px solid var(--accent-red);">
+                    <div style="color: #fca5a5; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px;">Vermelho Superior</div>
+                    <div style="color: #fff; font-size: 1rem;">16:00 • 22:00</div>
+                    <div style="color: #fff; font-size: 1rem; margin-top: 2px;">04:00 • 10:00</div>
+                </div>
+                <div style="background: rgba(239,68,68,0.1); padding: 14px; border-radius: 8px; text-align: center; border: 1px solid var(--accent-red);">
+                    <div style="color: #fca5a5; font-size: 0.9rem; font-weight: 700; margin-bottom: 6px;">Vermelho Inferior</div>
+                    <div style="color: #fff; font-size: 1rem;">13:00 • 19:00</div>
+                    <div style="color: #fff; font-size: 1rem; margin-top: 2px;">01:00 • 07:00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentFloor = '1F';
+        
+        let defaultBossData = {};
+        for(let i=1; i<=12; i++) {
+            let fKey = i + 'F';
+            defaultBossData[fKey] = [
+                { id: 'b1_' + fKey, name: 'Boss Verde (Esquerda Superior)', top: '39%', left: '33%', dead: false, respawnDuration: 1800, deathTimestamp: 0, type: 'common' },
+                { id: 'b2_' + fKey, name: 'Boss Verde (Centro Superior)', top: '33%', left: '50%', dead: false, respawnDuration: 1800, deathTimestamp: 0, type: 'common' },
+                { id: 'b3_' + fKey, name: 'Boss Dourado (Direita Superior)', top: '40%', left: '76%', dead: false, respawnDuration: 3600, deathTimestamp: 0, type: 'common' },
+                { id: 'b4_' + fKey, name: 'Boss Dourado (Esquerda Inferior)', top: '65%', left: '30%', dead: false, respawnDuration: 3600, deathTimestamp: 0, type: 'common' },
+                { id: 'b5_' + fKey, name: 'Boss Verde (Centro Inferior)', top: '66%', left: '42%', dead: false, respawnDuration: 1800, deathTimestamp: 0, type: 'common' },
+                { id: 'b6_' + fKey, name: 'Boss Verde (Direita Inferior)', top: '78%', left: '68%', dead: false, respawnDuration: 1800, deathTimestamp: 0, type: 'common' },
+                { id: 'b7_' + fKey, name: 'Boss Vermelho (Superior Direito)', top: '22%', left: '76%', dead: false, type: 'fixed_top', fixedSchedules: [16, 22, 4, 10] },
+                { id: 'b8_' + fKey, name: 'Boss Vermelho (Inferior Esquerdo)', top: '82%', left: '32%', dead: false, type: 'fixed_bottom', fixedSchedules: [13, 19, 1, 7] }
+            ];
+        }
+
+        let savedBosses = localStorage.getItem('boss_pico_data_fixed_v4');
+        let floorBosses = savedBosses ? JSON.parse(savedBosses) : defaultBossData;
+
+        let ticketState = JSON.parse(localStorage.getItem('boss_ticket_state_v4')) || {
+            quantity: 3,
+            remainingSeconds: 5400,
+            active: false
+        };
+
+        // Estrutura de reservas separada por andar (1F até 12F)
+        let defaultReservations = {};
+        for(let i=1; i<=12; i++) {
+            defaultReservations[i + 'F'] = [];
+        }
+        let savedReservations = localStorage.getItem('boss_reservations_by_floor_v1');
+        let floorReservations = savedReservations ? JSON.parse(savedReservations) : defaultReservations;
+
+        const floorGrid = document.getElementById('floorGrid');
+        for (let i = 1; i <= 12; i++) {
+            const floorName = i + 'F';
+            const btn = document.createElement('button');
+            btn.className = 'floor-btn ' + (floorName === currentFloor ? 'active' : '');
+            btn.innerHTML = floorName + ' <span>Andar ' + i + '</span>';
+            btn.onclick = function(e) { selectFloor(floorName, e); };
+            floorGrid.appendChild(btn);
+        }
+
+        function selectFloor(floorName, event) {
+            currentFloor = floorName;
+            var buttons = document.querySelectorAll('.floor-btn');
+            for(var i=0; i<buttons.length; i++) {
+                buttons[i].classList.remove('active');
+            }
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            } else {
+                buttons.forEach(b => {
+                    if(b.innerText.startsWith(floorName)) b.classList.add('active');
+                });
+            }
+            document.getElementById('currentFloorTitle').innerHTML = '<i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar ' + floorName + ' - Boss Pico Respawn';
+            document.getElementById('adminCurrentFloorLabel').innerText = floorName;
+            document.getElementById('currentFloorReservationLabel').innerText = '(' + floorName + ')';
+            
+            renderMarkers();
+            updateAdminBossList();
+            renderReservationsQueue();
+        }
+
+        function getNextFixedScheduleText(schedules) {
+            const now = new Date();
+            const currentTotalMins = now.getHours() * 60 + now.getMinutes();
+            let scheduleMins = schedules.map(h => h * 60).sort((a, b) => a - b);
+            let nextMins = scheduleMins.find(m => m > currentTotalMins);
+            let targetHour = 0;
+            let targetMin = 0;
+            let isTomorrow = false;
+
+            if (nextMins !== undefined) {
+                targetHour = Math.floor(nextMins / 60);
+                targetMin = nextMins % 60;
+            } else {
+                targetHour = Math.floor(scheduleMins[0] / 60);
+                targetMin = scheduleMins[0] % 60;
+                isTomorrow = true;
+            }
+
+            let formattedTime = targetHour.toString().padStart(2, '0') + ':' + targetMin.toString().padStart(2, '0');
+            return isTomorrow ? 'Próx: ' + formattedTime + ' (Amanhã)' : 'Próx: ' + formattedTime;
+        }
+
+        function renderMarkers() {
+            const layer = document.getElementById('markersLayer');
+            layer.innerHTML = '';
+            let bosses = floorBosses[currentFloor] || [];
+            
+            bosses.forEach((boss, index) => {
+                const marker = document.createElement('div');
+                marker.className = 'boss-marker ' + (boss.dead ? 'dead' : '');
+                marker.style.top = boss.top;
+                marker.style.left = boss.left;
+                
+                let innerHtmlContent = '<i class="fa-solid fa-skull"></i>';
+                
+                if (boss.dead) {
+                    let timeText = '';
+                    if (boss.type === 'fixed_top' || boss.type === 'fixed_bottom') {
+                        timeText = getNextFixedScheduleText(boss.fixedSchedules);
+                    } else {
+                        let now = Date.now();
+                        let elapsedSecs = Math.floor((now - boss.deathTimestamp) / 1000);
+                        let leftSecs = boss.respawnDuration - elapsedSecs;
+                        if(leftSecs < 0) leftSecs = 0;
+                        
+                        let min = Math.floor(leftSecs / 60);
+                        let sec = leftSecs % 60;
+                        timeText = min.toString().padStart(2, '0') + ':' + sec.toString().padStart(2, '0');
+                    }
+                    innerHtmlContent += '<div class="respawn-tag" id="rtag_' + currentFloor + '_' + index + '">' + timeText + '</div>';
+                }
+
+                innerHtmlContent += '<div class="boss-tooltip">' + boss.name + ' (' + (boss.dead ? 'Morto 💀' : 'Vivo 🟢') + ') - Clique para alternar</div>';
+                marker.innerHTML = innerHtmlContent;
+
+                marker.onclick = function() {
+                    toggleBossStatus(index);
+                };
+                layer.appendChild(marker);
+            });
+        }
+
+        function toggleBossStatus(index) {
+            if(floorBosses[currentFloor] && floorBosses[currentFloor][index]) {
+                let boss = floorBosses[currentFloor][index];
+                boss.dead = !boss.dead;
+                if(boss.dead) {
+                    boss.deathTimestamp = Date.now();
+                } else {
+                    boss.deathTimestamp = 0;
+                }
+                saveToLocalStorage();
+                renderMarkers();
+                updateAdminBossList();
+            }
+        }
+
+        function saveToLocalStorage() {
+            localStorage.setItem('boss_pico_data_fixed_v4', JSON.stringify(floorBosses));
+        }
+
+        function resetAllBossesData() {
+            if(confirm('Deseja realmente resetar todos os status e timers para o padrão inicial?')) {
+                localStorage.removeItem('boss_pico_data_fixed_v4');
+                location.reload();
+            }
+        }
+
+        // Lógica de cálculo do horário de saída por andar separadamente
+        function calculateQueueSchedulesForCurrentFloor() {
+            let list = floorReservations[currentFloor] || [];
+            let baseTime = new Date();
+            if (list.length > 0) {
+                let lastRes = list[list.length - 1];
+                baseTime = new Date(lastRes.exitTimestamp);
+            }
+            return baseTime;
+        }
+
+        function addReservation() {
+            const nickInput = document.getElementById('resPlayerNick');
+            const ticketSelect = document.getElementById('resTicketCount');
+            const nick = nickInput.value.trim();
+
+            if (!nick) {
+                alert('Por favor, digite o seu Nick.');
+                return;
+            }
+
+            const tickets = parseInt(ticketSelect.value);
+            const durationSecs = tickets * 1800; // 30 min por ticket
+
+            let startTime = calculateQueueSchedulesForCurrentFloor();
+            let exitTime = new Date(startTime.getTime() + durationSecs * 1000);
+
+            const newRes = {
+                nick: nick,
+                tickets: tickets,
+                startTimestamp: startTime.getTime(),
+                exitTimestamp: exitTime.getTime(),
+                exitTimeFormatted: exitTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            };
+
+            if(!floorReservations[currentFloor]) floorReservations[currentFloor] = [];
+            floorReservations[currentFloor].push(newRes);
+
+            localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
+            
+            nickInput.value = '';
+            renderReservationsQueue();
+        }
+
+        function renderReservationsQueue() {
+            const listEl = document.getElementById('reservationQueueList');
+            listEl.innerHTML = '';
+
+            let list = floorReservations[currentFloor] || [];
+
+            if (list.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Nenhuma reserva neste andar.</div>';
+                return;
+            }
+
+            list.forEach((res, index) => {
+                const item = document.createElement('div');
+                item.className = 'queue-item';
+                
+                item.innerHTML = `
+                    <div class="queue-item-info">
+                        <span class="queue-item-nick">${index + 1}. ${res.nick} (${res.tickets} Tk)</span>
+                        <span class="queue-item-time">Saída prevista: <strong>${res.exitTimeFormatted}</strong></span>
+                    </div>
+                    <button class="btn" style="padding: 4px 8px; font-size: 0.7rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeReservation(${index})"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        function removeReservation(index) {
+            let list = floorReservations[currentFloor] || [];
+            list.splice(index, 1);
+            
+            // Recalcular horários encadeados da fila deste andar
+            let rollingTime = new Date();
+            list.forEach((res) => {
+                let durationSecs = res.tickets * 1800;
+                let exitTime = new Date(rollingTime.getTime() + durationSecs * 1000);
+                res.startTimestamp = rollingTime.getTime();
+                res.exitTimestamp = exitTime.getTime();
+                res.exitTimeFormatted = exitTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                rollingTime = exitTime;
+            });
+
+            floorReservations[currentFloor] = list;
+            localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
+            renderReservationsQueue();
+        }
+
+        function clearCurrentFloorReservations() {
+            if (confirm('Deseja limpar toda a fila de reservas do andar ' + currentFloor + '?')) {
+                floorReservations[currentFloor] = [];
+                localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
+                renderReservationsQueue();
+            }
+        }
+
+        setInterval(() => {
+            const now = new Date();
+            document.getElementById('serverTime').innerText = now.toTimeString().split(' ')[0];
+
+            let bosses = floorBosses[currentFloor] || [];
+            bosses.forEach((boss, index) => {
+                if(boss.dead) {
+                    let tag = document.getElementById('rtag_' + currentFloor + '_' + index);
+                    if(tag) {
+                        if (boss.type === 'fixed_top' || boss.type === 'fixed_bottom') {
+                            tag.innerText = getNextFixedScheduleText(boss.fixedSchedules);
+                        } else {
+                            let elapsedSecs = Math.floor((Date.now() - boss.deathTimestamp) / 1000);
+                            let leftSecs = boss.respawnDuration - elapsedSecs;
+                            if(leftSecs <= 0) {
+                                boss.dead = false;
+                                boss.deathTimestamp = 0;
+                                saveToLocalStorage();
+                                renderMarkers();
+                                updateAdminBossList();
+                                return;
+                            }
+                            let min = Math.floor(leftSecs / 60);
+                            let sec = leftSecs % 60;
+                            tag.innerText = min.toString().padStart(2, '0') + ':' + sec.toString().padStart(2, '0');
+                        }
+                    }
+                }
+            });
+        }, 1000);
+
+        document.getElementById('ticketQuantity').value = ticketState.quantity;
+        updateTicketCalculation(false);
+        renderReservationsQueue();
+
+        function updateTicketCalculation(resetTime = true) {
+            const qty = parseInt(document.getElementById('ticketQuantity').value);
+            ticketState.quantity = qty;
+            if(resetTime && !ticketState.active) {
+                ticketState.remainingSeconds = qty * 1800;
+            }
+            
+            let totalSecs = ticketState.remainingSeconds;
+            let h = Math.floor(totalSecs / 3600);
+            let m = Math.floor((totalSecs % 3600) / 60);
+            let s = totalSecs % 60;
+            
+            document.getElementById('totalTicketTime').innerText = 
+                h.toString().padStart(2, '0') + ':' + 
+                m.toString().padStart(2, '0') + ':' + 
+                s.toString().padStart(2, '0');
+
+            localStorage.setItem('boss_ticket_state_v4', JSON.stringify(ticketState));
+        }
+
+        let ticketInterval = null;
+        function startTicketCountdown() {
+            ticketState.active = true;
+            document.getElementById('ticketCountdownStatus').innerText = 'Status: Contagem Ativa ⏳';
+            if(ticketInterval) clearInterval(ticketInterval);
+
+            ticketInterval = setInterval(() => {
+                if(ticketState.remainingSeconds > 0) {
+                    ticketState.remainingSeconds--;
+                    updateTicketCalculation(false);
+                } else {
+                    clearInterval(ticketInterval);
+                    ticketState.active = false;
+                    document.getElementById('ticketCountdownStatus').innerText = 'Status: Tempo Esgotado ⚠️';
+                }
+            }, 1000);
+        }
+
+        function resetTicketTimer() {
+            if(ticketInterval) clearInterval(ticketInterval);
+            ticketState.active = false;
+            const qty = parseInt(document.getElementById('ticketQuantity').value);
+            ticketState.remainingSeconds = qty * 1800;
+            updateTicketCalculation(false);
+            document.getElementById('ticketCountdownStatus').innerText = 'Status: Reiniciado / Pronto';
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.add('open');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.remove('open');
+        }
+
+        function verifyAdmin() {
+            const pwd = document.getElementById('adminPassword').value;
+            if(pwd === 'admin123' || pwd === 'admin') {
+                document.getElementById('adminAuthSection').style.display = 'none';
+                document.getElementById('adminPanelContent').style.display = 'block';
+                updateAdminBossList();
+            } else {
+                alert('Senha incorreta!');
+            }
+        }
+
+        function lockAdmin() {
+            document.getElementById('adminPassword').value = '';
+            document.getElementById('adminAuthSection').style.display = 'block';
+            document.getElementById('adminPanelContent').style.display = 'none';
+            closeAdminModal();
+        }
+
+        function updateAdminBossList() {
+            const listEl = document.getElementById('adminBossList');
+            listEl.innerHTML = '';
+            let bosses = floorBosses[currentFloor] || [];
+            
+            if(bosses.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 15px;">Nenhum boss cadastrado neste andar.</div>';
+                return;
+            }
+
+            bosses.forEach((boss, index) => {
+                const item = document.createElement('div');
+                item.className = 'admin-item';
+                let statusText = boss.dead ? '<span style="color:var(--accent-red);">Morto</span>' : '<span style="color:var(--accent-green);">Vivo</span>';
+                
+                item.innerHTML = '<div><strong>' + boss.name + '</strong><div style="font-size:0.75rem; color:var(--text-muted);">Status: ' + statusText + ' | Tipo: ' + boss.type + '</div></div>' +
+                                 '<div style="display:flex; gap:6px;">' +
+                                 '<button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-cyan); color: #67e8f9;" onclick="respawnManual(' + index + ')"><i class="fa-solid fa-rotate-left"></i> Repor</button>' +
+                                 '<button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeBoss(' + index + ')"><i class="fa-solid fa-trash"></i> Excluir</button>' +
+                                 '</div>';
+                listEl.appendChild(item);
+            });
+        }
+
+        function addCustomBoss() {
+            const nameInput = document.getElementById('newBossName');
+            const topInput = document.getElementById('newBossTop');
+            const leftInput = document.getElementById('newBossLeft');
+            const typeSelect = document.getElementById('newBossType');
+
+            const name = nameInput.value.trim();
+            if(!name) {
+                alert('Digite um nome válido.');
+                return;
+            }
+
+            let typeVal = typeSelect.value;
+            let bossObj = {
+                id: 'custom_' + Date.now(),
+                name: name,
+                top: topInput.value.trim() || '50%',
+                left: leftInput.value.trim() || '50%',
+                dead: false,
+                type: typeVal
+            };
+
+            if(typeVal === 'fixed_top') {
+                bossObj.fixedSchedules = [16, 22, 4, 10];
+            } else if(typeVal === 'fixed_bottom') {
+                bossObj.fixedSchedules = [13, 19, 1, 7];
+            } else {
+                bossObj.respawnDuration = 1800;
+                bossObj.deathTimestamp = 0;
+            }
+
+            if(!floorBosses[currentFloor]) floorBosses[currentFloor] = [];
+            floorBosses[currentFloor].push(bossObj);
+
+            nameInput.value = '';
+            saveToLocalStorage();
+            renderMarkers();
+            updateAdminBossList();
+            alert('Boss adicionado com sucesso!');
+        }
+
+        function respawnManual(index) {
+            if(floorBosses[currentFloor] && floorBosses[currentFloor][index]) {
+                floorBosses[currentFloor][index].dead = false;
+                floorBosses[currentFloor][index].deathTimestamp = 0;
+                saveToLocalStorage();
+                renderMarkers();
+                updateAdminBossList();
+            }
+        }
+
+        function removeBoss(index) {
+            if(floorBosses[currentFloor]) {
+                floorBosses[currentFloor].splice(index, 1);
+                saveToLocalStorage();
+                renderMarkers();
+                updateAdminBossList();
+            }
+        }
+
+        function openGlobalTimerModal() {
+            document.getElementById('globalTimerModal').classList.add('open');
+        }
+        function closeGlobalTimerModal() {
+            document.getElementById('globalTimerModal').classList.remove('open');
+        }
+
+        renderMarkers();
+    </script>
+</body>
+</html>
