@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Boss Pico Respawn - Sistema Avançado 3D & MIR4</title>
+    <title>Boss Pico Respawn - Sistema Avançado Vetorial 3D & MIR4</title>
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -140,12 +140,6 @@
             transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
         }
 
-        .panel-3d:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px var(--accent-cyan-glow);
-            border-color: rgba(6, 182, 212, 0.3);
-        }
-
         .floors-sidebar h3 {
             font-family: 'Orbitron', sans-serif;
             font-size: 1.1rem;
@@ -236,32 +230,35 @@
             gap: 12px;
         }
 
+        /* MAPA VETORIAL 3D NATIVO ESTILIZADO */
         .map-container {
             position: relative;
             width: 100%;
             border-radius: 12px;
             overflow: hidden;
-            border: 2px solid rgba(245, 158, 11, 0.3);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.8);
-            background: #000;
-            min-height: 450px;
+            border: 2px solid rgba(6, 182, 212, 0.4);
+            box-shadow: inset 0 0 50px rgba(0,0,0,0.9), 0 20px 40px rgba(0,0,0,0.8);
+            background: radial-gradient(circle at center, #111827 0%, #030712 100%);
+            min-height: 480px;
             display: flex;
             justify-content: center;
             align-items: center;
+            perspective: 1000px;
         }
 
-        .map-container img {
+        .vector-map-canvas {
+            position: absolute;
             width: 100%;
-            height: auto;
-            display: block;
-            object-fit: contain;
-            filter: contrast(1.05) saturate(1.1);
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
         }
 
         .boss-marker {
             position: absolute;
-            width: 42px;
-            height: 42px;
+            width: 44px;
+            height: 44px;
             background: radial-gradient(circle, #f59e0b 0%, #b45309 100%);
             border: 2px solid #fff;
             border-radius: 50%;
@@ -269,35 +266,36 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            box-shadow: 0 0 15px var(--accent-gold-glow);
-            transition: all 0.3s ease;
+            box-shadow: 0 0 20px var(--accent-gold-glow);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 10;
-            transform: translate(-50%, -50%);
+            transform: translate(-50%, -50%) scale(1);
         }
 
         .boss-marker.dead {
             background: radial-gradient(circle, #ef4444 0%, #7f1d1d 100%) !important;
             border-color: #fca5a5;
-            box-shadow: 0 0 15px rgba(239, 68, 68, 0.6);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.6);
         }
 
         .boss-marker:hover {
-            transform: translate(-50%, -50%) scale(1.25);
-            box-shadow: 0 0 25px #f59e0b;
+            transform: translate(-50%, -50%) scale(1.35);
+            box-shadow: 0 0 30px #f59e0b;
+            z-index: 30;
         }
 
         .boss-marker.dead:hover {
-            box-shadow: 0 0 25px #ef4444;
+            box-shadow: 0 0 30px #ef4444;
         }
 
         .boss-marker i {
             color: #fff;
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
 
         .respawn-tag {
             position: absolute;
-            top: -30px;
+            top: -32px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(15, 23, 42, 0.95);
@@ -311,18 +309,11 @@
             white-space: nowrap;
             pointer-events: none;
             box-shadow: 0 4px 10px rgba(0,0,0,0.5);
-            animation: pulseTag 1.5s infinite;
-        }
-
-        @keyframes pulseTag {
-            0% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.08); }
-            100% { transform: translateX(-50%) scale(1); }
         }
 
         .boss-tooltip {
             position: absolute;
-            bottom: 50px;
+            bottom: 55px;
             left: 50%;
             transform: translateX(-50%);
             background: rgba(10, 13, 20, 0.95);
@@ -334,7 +325,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s ease;
-            z-index: 20;
+            z-index: 40;
             box-shadow: 0 5px 15px rgba(0,0,0,0.5);
         }
 
@@ -462,6 +453,11 @@
             justify-content: space-between;
             align-items: center;
             font-size: 0.85rem;
+        }
+
+        .queue-item.active-turn {
+            border-color: var(--accent-green);
+            background: rgba(16, 185, 129, 0.1);
         }
 
         .queue-item-info {
@@ -633,12 +629,11 @@
             <i class="fa-solid fa-dragon"></i>
             <div>
                 <h1>MIR4 - BOSS PICO RESPAWN</h1>
-                <p style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">SISTEMA AVANÇADO 3D UNIFICADO</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">SISTEMA VETORIAL 3D NATIVO</p>
             </div>
         </div>
         <div class="header-actions">
             <button class="btn" onclick="openGlobalTimerModal()"><i class="fa-solid fa-clock"></i> Timers Globais</button>
-            <button class="btn" onclick="resetAllBossesData()"><i class="fa-solid fa-rotate-right"></i> Resetar Todos</button>
             <button class="btn btn-primary" onclick="openAdminModal()"><i class="fa-solid fa-shield-halved"></i> Painel Admin</button>
         </div>
     </header>
@@ -655,22 +650,45 @@
             <div class="panel-3d" style="padding: 20px;">
                 <div class="map-header">
                     <div class="map-title" id="currentFloorTitle">
-                        <i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar 1F - Boss Pico Respawn
+                        <i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar 1F - Vetor 3D
                     </div>
                     <div style="font-size: 0.85rem; color: var(--text-muted);" id="activeBossCount">
-                        <i class="fa-solid fa-skull"></i> 8 Bosses Precisamente Mapeados
+                        <i class="fa-solid fa-skull"></i> 8 Bosses Mapeados Dinamicamente
                     </div>
                 </div>
 
-                <div class="map-container" id="mapContainer" style="margin-top: 15px;">
-                    <img src="Captura de tela 2026-09-02 103941_7.jpg" alt="Boss Pico Respawn Map">
-                    <div id="markersLayer"></div>
+                <!-- Mapa Vetorial 3D Nativo (SVG + Elementos CSS) -->
+                <div class="map-container" id="mapContainer">
+                    <svg class="vector-map-canvas" viewBox="0 0 800 500" preserveAspectRatio="none">
+                        <!-- Grade Isométrica / Vetorial de Fundo -->
+                        <defs>
+                            <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
+                                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15"/>
+                                <stop offset="100%" stop-color="#030712" stop-opacity="0"/>
+                            </radialGradient>
+                            <linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.4"/>
+                                <stop offset="100%" stop-color="#f59e0b" stop-opacity="0.4"/>
+                            </linearGradient>
+                        </defs>
+                        <rect width="800" height="500" fill="url(#mapGlow)"/>
+                        
+                        <!-- Linhas de Conexão Vetorial Estilizadas (Trilha de Bosses) -->
+                        <path d="M 264,195 L 400,165 L 608,200 L 240,325 L 336,330 L 544,390" stroke="url(#pathGrad)" stroke-width="3" fill="none" stroke-dasharray="6,6"/>
+                        
+                        <!-- Plataformas 3D Estilizadas -->
+                        <ellipse cx="400" cy="250" rx="320" ry="180" fill="none" stroke="rgba(6, 182, 212, 0.2)" stroke-width="2"/>
+                        <ellipse cx="400" cy="250" rx="220" ry="120" fill="none" stroke="rgba(245, 158, 11, 0.2)" stroke-width="1.5" stroke-dasharray="4,4"/>
+                        <ellipse cx="400" cy="250" rx="100" ry="50" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+                    </svg>
+                    
+                    <div id="markersLayer" style="position: absolute; width: 100%; height: 100%; top: 0; left: 0;"></div>
                 </div>
 
                 <div class="status-bar">
                     <div class="status-indicator">
                         <div class="dot"></div>
-                        <span>Sincronizado e Salvo via LocalStorage</span>
+                        <span>Renderização Vetorial 3D Ativa & LocalStorage</span>
                     </div>
                     <div style="font-family: 'Orbitron', sans-serif; font-weight: 600; color: var(--accent-gold);" id="serverTime">
                         00:00:00
@@ -702,8 +720,8 @@
 
                     <div class="ticket-summary-card">
                         <h4>Tempo Total Acumulado</h4>
-                        <div class="ticket-total-time" id="totalTicketTime">01:30:00</div>
-                        <div class="ticket-countdown-sub" id="ticketCountdownStatus">Status: Pronto para ativar</div>
+                        <div class="ticket-total-time" id="totalTicketTime">00:00:00</div>
+                        <div class="ticket-countdown-sub" id="ticketCountdownStatus">Status: Pronto para zerar / iniciar</div>
                     </div>
 
                     <button class="btn" style="width: 100%; justify-content: center; font-size: 0.8rem;" onclick="resetTicketTimer()">Zerar / Reiniciar</button>
@@ -712,10 +730,10 @@
 
             <!-- Player Reservation Area -->
             <div class="panel-3d reservation-section">
-                <h3><i class="fa-solid fa-calendar-check"></i> Reserva <span id="currentFloorReservationLabel" style="color:var(--accent-cyan); font-size:0.9rem;">(1F)</span></h3>
+                <h3><i class="fa-solid fa-calendar-check"></i> Fila <span id="currentFloorReservationLabel" style="color:var(--accent-cyan); font-size:0.9rem;">(1F)</span></h3>
                 <div class="ticket-box" style="margin-bottom: 0;">
                     <div class="ticket-input-group">
-                        <label for="resPlayerNick">Seu Nick</label>
+                        <label for="resPlayerNick">Seu Nick (Identificação para Marcar)</label>
                         <input type="text" id="resPlayerNick" class="form-control" placeholder="Ex: GuerreiroPRO">
                     </div>
                     <div class="ticket-input-group">
@@ -729,12 +747,11 @@
                             <option value="6">6 Tickets (3 Horas)</option>
                         </select>
                     </div>
-                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="addReservation()">Cadastrar neste Andar</button>
+                    <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="addReservation()">Cadastrar na Fila</button>
 
                     <div style="margin-top: 10px;">
-                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: flex; justify-content: space-between;">
-                            <span>FILA DO ANDAR ATUAL</span>
-                            <span style="color: var(--accent-cyan); cursor: pointer;" onclick="clearCurrentFloorReservations()">Limpar Fila Deste Andar</span>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">
+                            <span>FILA DO ANDAR ATUAL (VEZ ATIVA)</span>
                         </div>
                         <div class="reservation-queue-list" id="reservationQueueList">
                             <!-- Inserido dinamicamente -->
@@ -752,6 +769,7 @@
                 <h2><i class="fa-solid fa-shield-halved"></i> Painel Administrativo Completo</h2>
                 <button class="close-modal" onclick="closeAdminModal()">&times;</button>
             </div>
+            
             <div id="adminAuthSection">
                 <div class="form-group">
                     <label>Senha de Administrador</label>
@@ -764,8 +782,24 @@
                 <p style="font-size: 0.85rem; color: var(--accent-green); margin-bottom: 15px;">
                     <i class="fa-solid fa-circle-check"></i> Acesso Autorizado para o Andar: <span id="adminCurrentFloorLabel" style="font-family:'Orbitron'; font-weight:bold;">1F</span>
                 </p>
+
+                <div class="form-group" style="background: rgba(6,182,212,0.05); padding: 15px; border-radius: 10px; border: 1px solid var(--accent-cyan);">
+                    <label style="color: var(--accent-cyan);"><i class="fa-solid fa-key"></i> Alterar Senha de Administrador</label>
+                    <div style="display: flex; gap: 10px; margin-top: 8px;">
+                        <input type="password" id="newAdminPasswordInput" class="form-control" placeholder="Nova senha">
+                        <button class="btn" style="border-color: var(--accent-cyan); color: #67e8f9; white-space: nowrap;" onclick="changeAdminPassword()">Salvar Senha</button>
+                    </div>
+                </div>
+
+                <div class="form-group" style="background: rgba(245,158,11,0.05); padding: 15px; border-radius: 10px; border: 1px solid var(--accent-gold); margin-top: 15px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                        <label style="color: var(--accent-gold); margin-bottom: 0;"><i class="fa-solid fa-users-gear"></i> Gerenciar Usuários na Fila (<span id="adminQueueFloorLabel">1F</span>)</label>
+                        <button class="btn" style="padding: 4px 8px; font-size: 0.7rem; border-color: var(--accent-red); color: #fca5a5;" onclick="clearCurrentFloorReservationsAdmin()">Limpar Fila do Andar</button>
+                    </div>
+                    <div class="admin-item-list" id="adminReservationList"></div>
+                </div>
                 
-                <div class="form-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color);">
+                <div class="form-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-top: 15px;">
                     <label style="color: var(--accent-gold);"><i class="fa-solid fa-plus-circle"></i> Adicionar / Repor Novo Boss</label>
                     <div style="display: flex; gap: 10px; margin-bottom: 10px;">
                         <input type="text" id="newBossName" class="form-control" placeholder="Nome do Boss">
@@ -796,7 +830,11 @@
                     <div class="admin-item-list" id="adminBossList"></div>
                 </div>
 
-                <button class="btn" style="width: 100%; justify-content: center; margin-top: 15px; border-color: var(--accent-red); color: #fca5a5;" onclick="lockAdmin()">Bloquear Painel</button>
+                <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                    <button class="btn" style="width: 100%; justify-content: center; border-color: var(--accent-red); color: #fca5a5;" onclick="resetAllBossesData()"><i class="fa-solid fa-rotate-right"></i> Resetar Todos os Dados do Sistema</button>
+                </div>
+
+                <button class="btn" style="width: 100%; justify-content: center; margin-top: 15px;" onclick="lockAdmin()">Bloquear Painel</button>
             </div>
         </div>
     </div>
@@ -809,7 +847,7 @@
                 <button class="close-modal" onclick="closeGlobalTimerModal()">&times;</button>
             </div>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">
-                Ciclos exatos de 6 em 6 horas conforme indicados na imagem:
+                Ciclos exatos de 6 em 6 horas:
             </p>
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; font-family: 'Orbitron', sans-serif;">
                 <div style="background: rgba(239,68,68,0.1); padding: 14px; border-radius: 8px; text-align: center; border: 1px solid var(--accent-red);">
@@ -844,21 +882,20 @@
             ];
         }
 
-        let savedBosses = localStorage.getItem('boss_pico_data_fixed_v4');
+        let savedBosses = localStorage.getItem('boss_pico_data_vector_v1');
         let floorBosses = savedBosses ? JSON.parse(savedBosses) : defaultBossData;
 
-        let ticketState = JSON.parse(localStorage.getItem('boss_ticket_state_v4')) || {
+        let ticketState = JSON.parse(localStorage.getItem('boss_ticket_state_vector_v1')) || {
             quantity: 3,
-            remainingSeconds: 5400,
+            remainingSeconds: 0,
             active: false
         };
 
-        // Estrutura de reservas separada por andar (1F até 12F)
         let defaultReservations = {};
         for(let i=1; i<=12; i++) {
             defaultReservations[i + 'F'] = [];
         }
-        let savedReservations = localStorage.getItem('boss_reservations_by_floor_v1');
+        let savedReservations = localStorage.getItem('boss_reservations_vector_v1');
         let floorReservations = savedReservations ? JSON.parse(savedReservations) : defaultReservations;
 
         const floorGrid = document.getElementById('floorGrid');
@@ -884,13 +921,15 @@
                     if(b.innerText.startsWith(floorName)) b.classList.add('active');
                 });
             }
-            document.getElementById('currentFloorTitle').innerHTML = '<i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar ' + floorName + ' - Boss Pico Respawn';
+            document.getElementById('currentFloorTitle').innerHTML = '<i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar ' + floorName + ' - Vetor 3D';
             document.getElementById('adminCurrentFloorLabel').innerText = floorName;
+            document.getElementById('adminQueueFloorLabel').innerText = floorName;
             document.getElementById('currentFloorReservationLabel').innerText = '(' + floorName + ')';
             
             renderMarkers();
             updateAdminBossList();
             renderReservationsQueue();
+            updateAdminReservationList();
         }
 
         function getNextFixedScheduleText(schedules) {
@@ -945,7 +984,7 @@
                     innerHtmlContent += '<div class="respawn-tag" id="rtag_' + currentFloor + '_' + index + '">' + timeText + '</div>';
                 }
 
-                innerHtmlContent += '<div class="boss-tooltip">' + boss.name + ' (' + (boss.dead ? 'Morto 💀' : 'Vivo 🟢') + ') - Clique para alternar</div>';
+                innerHtmlContent += '<div class="boss-tooltip">' + boss.name + ' (' + (boss.dead ? 'Morto 💀' : 'Vivo 🟢') + ') - Requer vez na fila</div>';
                 marker.innerHTML = innerHtmlContent;
 
                 marker.onclick = function() {
@@ -956,14 +995,25 @@
         }
 
         function toggleBossStatus(index) {
+            const nickAtual = document.getElementById('resPlayerNick').value.trim();
+            let filaDoAndar = floorReservations[currentFloor] || [];
+
+            if (filaDoAndar.length > 0) {
+                let jogadorDaVez = filaDoAndar[0].nick;
+                
+                if (!nickAtual || nickAtual.toLowerCase() !== jogadorDaVez.toLowerCase()) {
+                    alert(`Acesso negado! Apenas o jogador da vez na fila (${jogadorDaVez}) pode alterar o status dos bosses neste andar.`);
+                    return;
+                }
+            } else {
+                alert("Não há jogadores na fila para este andar no momento.");
+                return;
+            }
+
             if(floorBosses[currentFloor] && floorBosses[currentFloor][index]) {
                 let boss = floorBosses[currentFloor][index];
                 boss.dead = !boss.dead;
-                if(boss.dead) {
-                    boss.deathTimestamp = Date.now();
-                } else {
-                    boss.deathTimestamp = 0;
-                }
+                boss.deathTimestamp = boss.dead ? Date.now() : 0;
                 saveToLocalStorage();
                 renderMarkers();
                 updateAdminBossList();
@@ -971,25 +1021,16 @@
         }
 
         function saveToLocalStorage() {
-            localStorage.setItem('boss_pico_data_fixed_v4', JSON.stringify(floorBosses));
+            localStorage.setItem('boss_pico_data_vector_v1', JSON.stringify(floorBosses));
         }
 
         function resetAllBossesData() {
-            if(confirm('Deseja realmente resetar todos os status e timers para o padrão inicial?')) {
-                localStorage.removeItem('boss_pico_data_fixed_v4');
+            if(confirm('Deseja realmente resetar todos os status, filas e timers para o padrão inicial?')) {
+                localStorage.removeItem('boss_pico_data_vector_v1');
+                localStorage.removeItem('boss_reservations_vector_v1');
+                localStorage.removeItem('boss_ticket_state_vector_v1');
                 location.reload();
             }
-        }
-
-        // Lógica de cálculo do horário de saída por andar separadamente
-        function calculateQueueSchedulesForCurrentFloor() {
-            let list = floorReservations[currentFloor] || [];
-            let baseTime = new Date();
-            if (list.length > 0) {
-                let lastRes = list[list.length - 1];
-                baseTime = new Date(lastRes.exitTimestamp);
-            }
-            return baseTime;
         }
 
         function addReservation() {
@@ -1003,26 +1044,30 @@
             }
 
             const tickets = parseInt(ticketSelect.value);
-            const durationSecs = tickets * 1800; // 30 min por ticket
+            const durationSecs = tickets * 1800;
 
-            let startTime = calculateQueueSchedulesForCurrentFloor();
-            let exitTime = new Date(startTime.getTime() + durationSecs * 1000);
+            let list = floorReservations[currentFloor] || [];
+            let remainingSecsTotal = durationSecs;
+            if (list.length > 0) {
+                list.forEach(item => {
+                    remainingSecsTotal += item.remainingSeconds;
+                });
+            }
 
             const newRes = {
                 nick: nick,
                 tickets: tickets,
-                startTimestamp: startTime.getTime(),
-                exitTimestamp: exitTime.getTime(),
-                exitTimeFormatted: exitTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                remainingSeconds: remainingSecsTotal,
+                totalDurationSeconds: durationSecs
             };
 
             if(!floorReservations[currentFloor]) floorReservations[currentFloor] = [];
             floorReservations[currentFloor].push(newRes);
 
-            localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
+            localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
             
-            nickInput.value = '';
             renderReservationsQueue();
+            updateAdminReservationList();
         }
 
         function renderReservationsQueue() {
@@ -1032,56 +1077,99 @@
             let list = floorReservations[currentFloor] || [];
 
             if (list.length === 0) {
-                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Nenhuma reserva neste andar.</div>';
+                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Nenhum cadastro na fila.</div>';
                 return;
             }
 
             list.forEach((res, index) => {
                 const item = document.createElement('div');
-                item.className = 'queue-item';
+                item.className = 'queue-item ' + (index === 0 ? 'active-turn' : '');
                 
+                let m = Math.floor(res.remainingSeconds / 60);
+                let s = res.remainingSeconds % 60;
+                let timeFormatted = m.toString().padStart(2, '0') + ':' + s.toString().padStart(2, '0');
+
                 item.innerHTML = `
                     <div class="queue-item-info">
-                        <span class="queue-item-nick">${index + 1}. ${res.nick} (${res.tickets} Tk)</span>
-                        <span class="queue-item-time">Saída prevista: <strong>${res.exitTimeFormatted}</strong></span>
+                        <span class="queue-item-nick">${index + 1}. ${res.nick} (${res.tickets} Tk) ${index === 0 ? '🟢 (Vez Ativa)' : ''}</span>
+                        <span class="queue-item-time">Tempo restante: <strong>${timeFormatted}</strong></span>
                     </div>
-                    <button class="btn" style="padding: 4px 8px; font-size: 0.7rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeReservation(${index})"><i class="fa-solid fa-xmark"></i></button>
                 `;
                 listEl.appendChild(item);
             });
         }
 
-        function removeReservation(index) {
-            let list = floorReservations[currentFloor] || [];
-            list.splice(index, 1);
-            
-            // Recalcular horários encadeados da fila deste andar
-            let rollingTime = new Date();
-            list.forEach((res) => {
-                let durationSecs = res.tickets * 1800;
-                let exitTime = new Date(rollingTime.getTime() + durationSecs * 1000);
-                res.startTimestamp = rollingTime.getTime();
-                res.exitTimestamp = exitTime.getTime();
-                res.exitTimeFormatted = exitTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                rollingTime = exitTime;
-            });
+        function updateAdminReservationList() {
+            const listEl = document.getElementById('adminReservationList');
+            if(!listEl) return;
+            listEl.innerHTML = '';
 
-            floorReservations[currentFloor] = list;
-            localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
-            renderReservationsQueue();
+            let list = floorReservations[currentFloor] || [];
+
+            if (list.length === 0) {
+                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Fila vazia neste andar.</div>';
+                return;
+            }
+
+            list.forEach((res, index) => {
+                const item = document.createElement('div');
+                item.className = 'admin-item';
+                
+                item.innerHTML = `
+                    <div>
+                        <strong>${index + 1}. ${res.nick}</strong>
+                        <div style="font-size:0.75rem; color:var(--text-muted);">Tickets: ${res.tickets}</div>
+                    </div>
+                    <button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeReservationAdmin(${index})"><i class="fa-solid fa-trash"></i> Remover</button>
+                `;
+                listEl.appendChild(item);
+            });
         }
 
-        function clearCurrentFloorReservations() {
+        function removeReservationAdmin(index) {
+            let list = floorReservations[currentFloor] || [];
+            list.splice(index, 1);
+            floorReservations[currentFloor] = list;
+            localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
+            renderReservationsQueue();
+            updateAdminReservationList();
+        }
+
+        function clearCurrentFloorReservationsAdmin() {
             if (confirm('Deseja limpar toda a fila de reservas do andar ' + currentFloor + '?')) {
                 floorReservations[currentFloor] = [];
-                localStorage.setItem('boss_reservations_by_floor_v1', JSON.stringify(floorReservations));
+                localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
                 renderReservationsQueue();
+                updateAdminReservationList();
             }
         }
 
         setInterval(() => {
             const now = new Date();
             document.getElementById('serverTime').innerText = now.toTimeString().split(' ')[0];
+
+            Object.keys(floorReservations).forEach(floorKey => {
+                let list = floorReservations[floorKey];
+                if (list && list.length > 0) {
+                    list[0].remainingSeconds--;
+                    if (list[0].remainingSeconds <= 0) {
+                        list.shift();
+                    }
+                    let rollingTimeSum = 0;
+                    list.forEach((res, idx) => {
+                        if (idx === 0) {
+                            rollingTimeSum = res.remainingSeconds;
+                        } else {
+                            rollingTimeSum += res.totalDurationSeconds;
+                            res.remainingSeconds = rollingTimeSum;
+                        }
+                    });
+
+                    localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
+                }
+            });
+
+            renderReservationsQueue();
 
             let bosses = floorBosses[currentFloor] || [];
             bosses.forEach((boss, index) => {
@@ -1118,7 +1206,7 @@
             const qty = parseInt(document.getElementById('ticketQuantity').value);
             ticketState.quantity = qty;
             if(resetTime && !ticketState.active) {
-                ticketState.remainingSeconds = qty * 1800;
+                ticketState.remainingSeconds = 0;
             }
             
             let totalSecs = ticketState.remainingSeconds;
@@ -1131,11 +1219,13 @@
                 m.toString().padStart(2, '0') + ':' + 
                 s.toString().padStart(2, '0');
 
-            localStorage.setItem('boss_ticket_state_v4', JSON.stringify(ticketState));
+            localStorage.setItem('boss_ticket_state_vector_v1', JSON.stringify(ticketState));
         }
 
         let ticketInterval = null;
         function startTicketCountdown() {
+            const qty = parseInt(document.getElementById('ticketQuantity').value);
+            ticketState.remainingSeconds = qty * 1800;
             ticketState.active = true;
             document.getElementById('ticketCountdownStatus').innerText = 'Status: Contagem Ativa ⏳';
             if(ticketInterval) clearInterval(ticketInterval);
@@ -1155,13 +1245,23 @@
         function resetTicketTimer() {
             if(ticketInterval) clearInterval(ticketInterval);
             ticketState.active = false;
-            const qty = parseInt(document.getElementById('ticketQuantity').value);
-            ticketState.remainingSeconds = qty * 1800;
+            ticketState.remainingSeconds = 0;
             updateTicketCalculation(false);
-            document.getElementById('ticketCountdownStatus').innerText = 'Status: Reiniciado / Pronto';
+            document.getElementById('ticketCountdownStatus').innerText = 'Status: Zerado / Pronto para o 1º horário';
         }
 
         function openAdminModal() {
+            let savedAuth = sessionStorage.getItem('boss_admin_auth');
+            if(savedAuth === 'true') {
+                document.getElementById('adminAuthSection').style.display = 'none';
+                document.getElementById('adminPanelContent').style.display = 'block';
+                updateAdminBossList();
+                updateAdminReservationList();
+            } else {
+                document.getElementById('adminAuthSection').style.display = 'block';
+                document.getElementById('adminPanelContent').style.display = 'none';
+                document.getElementById('adminPassword').value = '';
+            }
             document.getElementById('adminModal').classList.add('open');
         }
 
@@ -1171,16 +1271,32 @@
 
         function verifyAdmin() {
             const pwd = document.getElementById('adminPassword').value;
-            if(pwd === 'admin123' || pwd === 'admin') {
+            const currentAdminPwd = localStorage.getItem('boss_admin_password') || 'admin123';
+            
+            if(pwd === currentAdminPwd) {
+                sessionStorage.setItem('boss_admin_auth', 'true');
                 document.getElementById('adminAuthSection').style.display = 'none';
                 document.getElementById('adminPanelContent').style.display = 'block';
                 updateAdminBossList();
+                updateAdminReservationList();
             } else {
                 alert('Senha incorreta!');
             }
         }
 
+        function changeAdminPassword() {
+            const newPwd = document.getElementById('newAdminPasswordInput').value.trim();
+            if(!newPwd) {
+                alert('Digite uma nova senha válida.');
+                return;
+            }
+            localStorage.setItem('boss_admin_password', newPwd);
+            document.getElementById('newAdminPasswordInput').value = '';
+            alert('Senha de administrador alterada com sucesso!');
+        }
+
         function lockAdmin() {
+            sessionStorage.removeItem('boss_admin_auth');
             document.getElementById('adminPassword').value = '';
             document.getElementById('adminAuthSection').style.display = 'block';
             document.getElementById('adminPanelContent').style.display = 'none';
