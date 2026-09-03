@@ -136,8 +136,6 @@
             padding: 24px;
             box-shadow: var(--shadow-3d);
             backdrop-filter: blur(12px);
-            transform-style: preserve-3d;
-            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
         }
 
         .floors-sidebar h3 {
@@ -230,7 +228,6 @@
             gap: 12px;
         }
 
-        /* MAPA VETORIAL 3D NATIVO ESTILIZADO */
         .map-container {
             position: relative;
             width: 100%;
@@ -243,7 +240,6 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            perspective: 1000px;
         }
 
         .vector-map-canvas {
@@ -282,10 +278,6 @@
             transform: translate(-50%, -50%) scale(1.35);
             box-shadow: 0 0 30px #f59e0b;
             z-index: 30;
-        }
-
-        .boss-marker.dead:hover {
-            box-shadow: 0 0 30px #ef4444;
         }
 
         .boss-marker i {
@@ -408,7 +400,6 @@
             color: var(--text-muted);
             margin-bottom: 4px;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
 
         .ticket-total-time {
@@ -582,10 +573,6 @@
             gap: 10px;
         }
 
-        .admin-item:last-child {
-            border-bottom: none;
-        }
-
         .status-bar {
             background: rgba(15, 23, 42, 0.9);
             border: 1px solid var(--border-color);
@@ -629,7 +616,7 @@
             <i class="fa-solid fa-dragon"></i>
             <div>
                 <h1>MIR4 - BOSS PICO RESPAWN</h1>
-                <p style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">SISTEMA VETORIAL 3D NATIVO</p>
+                <p style="font-size: 0.75rem; color: var(--text-muted); letter-spacing: 0.5px;">SISTEMA VETORIAL 3D COM FIREBASE</p>
             </div>
         </div>
         <div class="header-actions">
@@ -653,14 +640,12 @@
                         <i class="fa-solid fa-map-location-dot" style="color: var(--accent-gold);"></i> Andar 1F - Vetor 3D
                     </div>
                     <div style="font-size: 0.85rem; color: var(--text-muted);" id="activeBossCount">
-                        <i class="fa-solid fa-skull"></i> 8 Bosses Mapeados Dinamicamente
+                        <i class="fa-solid fa-skull"></i> Sincronizado via Firebase Realtime
                     </div>
                 </div>
 
-                <!-- Mapa Vetorial 3D Nativo (SVG + Elementos CSS) -->
                 <div class="map-container" id="mapContainer">
                     <svg class="vector-map-canvas" viewBox="0 0 800 500" preserveAspectRatio="none">
-                        <!-- Grade Isométrica / Vetorial de Fundo -->
                         <defs>
                             <radialGradient id="mapGlow" cx="50%" cy="50%" r="50%">
                                 <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.15"/>
@@ -672,11 +657,7 @@
                             </linearGradient>
                         </defs>
                         <rect width="800" height="500" fill="url(#mapGlow)"/>
-                        
-                        <!-- Linhas de Conexão Vetorial Estilizadas (Trilha de Bosses) -->
                         <path d="M 264,195 L 400,165 L 608,200 L 240,325 L 336,330 L 544,390" stroke="url(#pathGrad)" stroke-width="3" fill="none" stroke-dasharray="6,6"/>
-                        
-                        <!-- Plataformas 3D Estilizadas -->
                         <ellipse cx="400" cy="250" rx="320" ry="180" fill="none" stroke="rgba(6, 182, 212, 0.2)" stroke-width="2"/>
                         <ellipse cx="400" cy="250" rx="220" ry="120" fill="none" stroke="rgba(245, 158, 11, 0.2)" stroke-width="1.5" stroke-dasharray="4,4"/>
                         <ellipse cx="400" cy="250" rx="100" ry="50" fill="none" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
@@ -688,7 +669,7 @@
                 <div class="status-bar">
                     <div class="status-indicator">
                         <div class="dot"></div>
-                        <span>Renderização Vetorial 3D Ativa & LocalStorage</span>
+                        <span>Conectado ao Cloud Firestore (Firebase)</span>
                     </div>
                     <div style="font-family: 'Orbitron', sans-serif; font-weight: 600; color: var(--accent-gold);" id="serverTime">
                         00:00:00
@@ -699,7 +680,6 @@
 
         <!-- Right Column: Ticket Selector & Player Reservations -->
         <div class="right-column">
-            <!-- Ticket Quantity Selector -->
             <div class="panel-3d ticket-section">
                 <h3><i class="fa-solid fa-ticket"></i> Seletor de Tickets</h3>
                 <div class="ticket-box">
@@ -728,7 +708,6 @@
                 </div>
             </div>
 
-            <!-- Player Reservation Area -->
             <div class="panel-3d reservation-section">
                 <h3><i class="fa-solid fa-calendar-check"></i> Fila <span id="currentFloorReservationLabel" style="color:var(--accent-cyan); font-size:0.9rem;">(1F)</span></h3>
                 <div class="ticket-box" style="margin-bottom: 0;">
@@ -753,9 +732,7 @@
                         <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">
                             <span>FILA DO ANDAR ATUAL (VEZ ATIVA)</span>
                         </div>
-                        <div class="reservation-queue-list" id="reservationQueueList">
-                            <!-- Inserido dinamicamente -->
-                        </div>
+                        <div class="reservation-queue-list" id="reservationQueueList"></div>
                     </div>
                 </div>
             </div>
@@ -801,7 +778,7 @@
                 
                 <div class="form-group" style="background: rgba(255,255,255,0.03); padding: 15px; border-radius: 10px; border: 1px solid var(--border-color); margin-top: 15px;">
                     <label style="color: var(--accent-gold);"><i class="fa-solid fa-plus-circle"></i> Adicionar / Repor Novo Boss</label>
-                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="margin-bottom: 10px;">
                         <input type="text" id="newBossName" class="form-control" placeholder="Nome do Boss">
                     </div>
                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
@@ -828,10 +805,6 @@
                 <div class="form-group" style="margin-top: 20px;">
                     <label>Gerenciar, Excluir ou Repor Bosses do Andar Atual</label>
                     <div class="admin-item-list" id="adminBossList"></div>
-                </div>
-
-                <div style="margin-top: 25px; border-top: 1px solid var(--border-color); padding-top: 15px;">
-                    <button class="btn" style="width: 100%; justify-content: center; border-color: var(--accent-red); color: #fca5a5;" onclick="resetAllBossesData()"><i class="fa-solid fa-rotate-right"></i> Resetar Todos os Dados do Sistema</button>
                 </div>
 
                 <button class="btn" style="width: 100%; justify-content: center; margin-top: 15px;" onclick="lockAdmin()">Bloquear Painel</button>
@@ -864,9 +837,28 @@
         </div>
     </div>
 
-    <script>
+    <!-- Importando o Firebase via CDN (Compatível com o snippet fornecido) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDR8wQtU--AVT7s6CSimjiEoj0d19YZZDE",
+            authDomain: "mir4-boss-pico.firebaseapp.com",
+            projectId: "mir4-boss-pico",
+            storageBucket: "mir4-boss-pico.firebasestorage.app",
+            messagingSenderId: "960653648644",
+            appId: "1:960653648644:web:e4445615879f1d0bfe6651"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
         let currentFloor = '1F';
-        
+        let floorBosses = {};
+        let floorReservations = {};
+
+        // Estrutura padrão inicial para os andares
         let defaultBossData = {};
         for(let i=1; i<=12; i++) {
             let fKey = i + 'F';
@@ -882,22 +874,12 @@
             ];
         }
 
-        let savedBosses = localStorage.getItem('boss_pico_data_vector_v1');
-        let floorBosses = savedBosses ? JSON.parse(savedBosses) : defaultBossData;
-
-        let ticketState = JSON.parse(localStorage.getItem('boss_ticket_state_vector_v1')) || {
-            quantity: 3,
-            remainingSeconds: 0,
-            active: false
-        };
-
         let defaultReservations = {};
         for(let i=1; i<=12; i++) {
             defaultReservations[i + 'F'] = [];
         }
-        let savedReservations = localStorage.getItem('boss_reservations_vector_v1');
-        let floorReservations = savedReservations ? JSON.parse(savedReservations) : defaultReservations;
 
+        // Criando a grade de botões dos andares
         const floorGrid = document.getElementById('floorGrid');
         for (let i = 1; i <= 12; i++) {
             const floorName = i + 'F';
@@ -908,7 +890,7 @@
             floorGrid.appendChild(btn);
         }
 
-        function selectFloor(floorName, event) {
+        window.selectFloor = function(floorName, event) {
             currentFloor = floorName;
             var buttons = document.querySelectorAll('.floor-btn');
             for(var i=0; i<buttons.length; i++) {
@@ -984,7 +966,7 @@
                     innerHtmlContent += '<div class="respawn-tag" id="rtag_' + currentFloor + '_' + index + '">' + timeText + '</div>';
                 }
 
-                innerHtmlContent += '<div class="boss-tooltip">' + boss.name + ' (' + (boss.dead ? 'Morto 💀' : 'Vivo 🟢') + ') - Requer vez na fila</div>';
+                innerHtmlContent += '<div class="boss-tooltip">' + boss.name + ' (' + (boss.dead ? 'Morto 💀' : 'Vivo 🟢') + ')</div>';
                 marker.innerHTML = innerHtmlContent;
 
                 marker.onclick = function() {
@@ -994,15 +976,14 @@
             });
         }
 
-        function toggleBossStatus(index) {
+        window.toggleBossStatus = async function(index) {
             const nickAtual = document.getElementById('resPlayerNick').value.trim();
             let filaDoAndar = floorReservations[currentFloor] || [];
 
             if (filaDoAndar.length > 0) {
                 let jogadorDaVez = filaDoAndar[0].nick;
-                
                 if (!nickAtual || nickAtual.toLowerCase() !== jogadorDaVez.toLowerCase()) {
-                    alert(`Acesso negado! Apenas o jogador da vez na fila (${jogadorDaVez}) pode alterar o status dos bosses neste andar.`);
+                    alert(`Acesso negado! Apenas o jogador da vez na fila (${jogadorDaVez}) pode alterar o status dos bosses.`);
                     return;
                 }
             } else {
@@ -1014,26 +995,54 @@
                 let boss = floorBosses[currentFloor][index];
                 boss.dead = !boss.dead;
                 boss.deathTimestamp = boss.dead ? Date.now() : 0;
-                saveToLocalStorage();
-                renderMarkers();
-                updateAdminBossList();
+                await syncToFirebase();
             }
         }
 
-        function saveToLocalStorage() {
-            localStorage.setItem('boss_pico_data_vector_v1', JSON.stringify(floorBosses));
-        }
-
-        function resetAllBossesData() {
-            if(confirm('Deseja realmente resetar todos os status, filas e timers para o padrão inicial?')) {
-                localStorage.removeItem('boss_pico_data_vector_v1');
-                localStorage.removeItem('boss_reservations_vector_v1');
-                localStorage.removeItem('boss_ticket_state_vector_v1');
-                location.reload();
+        async function syncToFirebase() {
+            try {
+                await setDoc(doc(db, "mir4_data", "bosses"), floorBosses);
+                await setDoc(doc(db, "mir4_data", "reservations"), floorReservations);
+            } catch (e) {
+                console.error("Erro ao sincronizar com Firebase: ", e);
             }
         }
 
-        function addReservation() {
+        // Sincronização em Tempo Real (Realtime Listener do Firestore)
+        async function initFirebaseSync() {
+            const bossDocRef = doc(db, "mir4_data", "bosses");
+            const resDocRef = doc(db, "mir4_data", "reservations");
+
+            // Verifica se já existem dados no Firestore, senão inicializa com o padrão
+            const bossSnap = await getDoc(bossDocRef);
+            if (!bossSnap.exists()) {
+                await setDoc(bossDocRef, defaultBossData);
+            }
+            const resSnap = await getDoc(resDocRef);
+            if (!resSnap.exists()) {
+                await setDoc(resDocRef, defaultReservations);
+            }
+
+            // Ouvindo mudanças nos Bosses
+            onSnapshot(bossDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    floorBosses = docSnap.data();
+                    renderMarkers();
+                    updateAdminBossList();
+                }
+            });
+
+            // Ouvindo mudanças nas Filas/Reservas
+            onSnapshot(resDocRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    floorReservations = docSnap.data();
+                    renderReservationsQueue();
+                    updateAdminReservationList();
+                }
+            });
+        }
+
+        window.addReservation = async function() {
             const nickInput = document.getElementById('resPlayerNick');
             const ticketSelect = document.getElementById('resTicketCount');
             const nick = nickInput.value.trim();
@@ -1064,14 +1073,12 @@
             if(!floorReservations[currentFloor]) floorReservations[currentFloor] = [];
             floorReservations[currentFloor].push(newRes);
 
-            localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
-            
-            renderReservationsQueue();
-            updateAdminReservationList();
+            await syncToFirebase();
         }
 
         function renderReservationsQueue() {
             const listEl = document.getElementById('reservationQueueList');
+            if(!listEl) return;
             listEl.innerHTML = '';
 
             let list = floorReservations[currentFloor] || [];
@@ -1105,7 +1112,6 @@
             listEl.innerHTML = '';
 
             let list = floorReservations[currentFloor] || [];
-
             if (list.length === 0) {
                 listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 10px; font-size: 0.8rem;">Fila vazia neste andar.</div>';
                 return;
@@ -1114,7 +1120,6 @@
             list.forEach((res, index) => {
                 const item = document.createElement('div');
                 item.className = 'admin-item';
-                
                 item.innerHTML = `
                     <div>
                         <strong>${index + 1}. ${res.nick}</strong>
@@ -1126,50 +1131,24 @@
             });
         }
 
-        function removeReservationAdmin(index) {
+        window.removeReservationAdmin = async function(index) {
             let list = floorReservations[currentFloor] || [];
             list.splice(index, 1);
             floorReservations[currentFloor] = list;
-            localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
-            renderReservationsQueue();
-            updateAdminReservationList();
+            await syncToFirebase();
         }
 
-        function clearCurrentFloorReservationsAdmin() {
+        window.clearCurrentFloorReservationsAdmin = async function() {
             if (confirm('Deseja limpar toda a fila de reservas do andar ' + currentFloor + '?')) {
                 floorReservations[currentFloor] = [];
-                localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
-                renderReservationsQueue();
-                updateAdminReservationList();
+                await syncToFirebase();
             }
         }
 
+        // Relógio e decremento de timers locais
         setInterval(() => {
             const now = new Date();
             document.getElementById('serverTime').innerText = now.toTimeString().split(' ')[0];
-
-            Object.keys(floorReservations).forEach(floorKey => {
-                let list = floorReservations[floorKey];
-                if (list && list.length > 0) {
-                    list[0].remainingSeconds--;
-                    if (list[0].remainingSeconds <= 0) {
-                        list.shift();
-                    }
-                    let rollingTimeSum = 0;
-                    list.forEach((res, idx) => {
-                        if (idx === 0) {
-                            rollingTimeSum = res.remainingSeconds;
-                        } else {
-                            rollingTimeSum += res.totalDurationSeconds;
-                            res.remainingSeconds = rollingTimeSum;
-                        }
-                    });
-
-                    localStorage.setItem('boss_reservations_vector_v1', JSON.stringify(floorReservations));
-                }
-            });
-
-            renderReservationsQueue();
 
             let bosses = floorBosses[currentFloor] || [];
             bosses.forEach((boss, index) => {
@@ -1184,9 +1163,7 @@
                             if(leftSecs <= 0) {
                                 boss.dead = false;
                                 boss.deathTimestamp = 0;
-                                saveToLocalStorage();
-                                renderMarkers();
-                                updateAdminBossList();
+                                syncToFirebase();
                                 return;
                             }
                             let min = Math.floor(leftSecs / 60);
@@ -1198,17 +1175,16 @@
             });
         }, 1000);
 
+        // Funções de Tickets individuais do usuário
+        let ticketState = { quantity: 3, remainingSeconds: 0, active: false };
         document.getElementById('ticketQuantity').value = ticketState.quantity;
-        updateTicketCalculation(false);
-        renderReservationsQueue();
 
-        function updateTicketCalculation(resetTime = true) {
+        window.updateTicketCalculation = function(resetTime = true) {
             const qty = parseInt(document.getElementById('ticketQuantity').value);
             ticketState.quantity = qty;
             if(resetTime && !ticketState.active) {
                 ticketState.remainingSeconds = 0;
             }
-            
             let totalSecs = ticketState.remainingSeconds;
             let h = Math.floor(totalSecs / 3600);
             let m = Math.floor((totalSecs % 3600) / 60);
@@ -1218,12 +1194,10 @@
                 h.toString().padStart(2, '0') + ':' + 
                 m.toString().padStart(2, '0') + ':' + 
                 s.toString().padStart(2, '0');
-
-            localStorage.setItem('boss_ticket_state_vector_v1', JSON.stringify(ticketState));
         }
 
         let ticketInterval = null;
-        function startTicketCountdown() {
+        window.startTicketCountdown = function() {
             const qty = parseInt(document.getElementById('ticketQuantity').value);
             ticketState.remainingSeconds = qty * 1800;
             ticketState.active = true;
@@ -1242,15 +1216,16 @@
             }, 1000);
         }
 
-        function resetTicketTimer() {
+        window.resetTicketTimer = function() {
             if(ticketInterval) clearInterval(ticketInterval);
             ticketState.active = false;
             ticketState.remainingSeconds = 0;
             updateTicketCalculation(false);
-            document.getElementById('ticketCountdownStatus').innerText = 'Status: Zerado / Pronto para o 1º horário';
+            document.getElementById('ticketCountdownStatus').innerText = 'Status: Zerado / Pronto';
         }
 
-        function openAdminModal() {
+        // Funções de Admin
+        window.openAdminModal = function() {
             let savedAuth = sessionStorage.getItem('boss_admin_auth');
             if(savedAuth === 'true') {
                 document.getElementById('adminAuthSection').style.display = 'none';
@@ -1265,14 +1240,13 @@
             document.getElementById('adminModal').classList.add('open');
         }
 
-        function closeAdminModal() {
+        window.closeAdminModal = function() {
             document.getElementById('adminModal').classList.remove('open');
         }
 
-        function verifyAdmin() {
+        window.verifyAdmin = function() {
             const pwd = document.getElementById('adminPassword').value;
             const currentAdminPwd = localStorage.getItem('boss_admin_password') || 'admin123';
-            
             if(pwd === currentAdminPwd) {
                 sessionStorage.setItem('boss_admin_auth', 'true');
                 document.getElementById('adminAuthSection').style.display = 'none';
@@ -1284,7 +1258,7 @@
             }
         }
 
-        function changeAdminPassword() {
+        window.changeAdminPassword = function() {
             const newPwd = document.getElementById('newAdminPasswordInput').value.trim();
             if(!newPwd) {
                 alert('Digite uma nova senha válida.');
@@ -1295,21 +1269,19 @@
             alert('Senha de administrador alterada com sucesso!');
         }
 
-        function lockAdmin() {
+        window.lockAdmin = function() {
             sessionStorage.removeItem('boss_admin_auth');
-            document.getElementById('adminPassword').value = '';
-            document.getElementById('adminAuthSection').style.display = 'block';
-            document.getElementById('adminPanelContent').style.display = 'none';
             closeAdminModal();
         }
 
         function updateAdminBossList() {
             const listEl = document.getElementById('adminBossList');
+            if(!listEl) return;
             listEl.innerHTML = '';
             let bosses = floorBosses[currentFloor] || [];
             
             if(bosses.length === 0) {
-                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 15px;">Nenhum boss cadastrado neste andar.</div>';
+                listEl.innerHTML = '<div style="text-align:center; color: var(--text-muted); padding: 15px;">Nenhum boss cadastrado.</div>';
                 return;
             }
 
@@ -1318,16 +1290,16 @@
                 item.className = 'admin-item';
                 let statusText = boss.dead ? '<span style="color:var(--accent-red);">Morto</span>' : '<span style="color:var(--accent-green);">Vivo</span>';
                 
-                item.innerHTML = '<div><strong>' + boss.name + '</strong><div style="font-size:0.75rem; color:var(--text-muted);">Status: ' + statusText + ' | Tipo: ' + boss.type + '</div></div>' +
+                item.innerHTML = '<div><strong>' + boss.name + '</strong><div style="font-size:0.75rem; color:var(--text-muted);">Status: ' + statusText + '</div></div>' +
                                  '<div style="display:flex; gap:6px;">' +
                                  '<button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-cyan); color: #67e8f9;" onclick="respawnManual(' + index + ')"><i class="fa-solid fa-rotate-left"></i> Repor</button>' +
-                                 '<button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeBoss(' + index + ')"><i class="fa-solid fa-trash"></i> Excluir</button>' +
+                                 '<button class="btn" style="padding: 4px 10px; font-size: 0.75rem; border-color: var(--accent-red); color: #fca5a5;" onclick="removeBoss(' + index + ')"><i class="fa-solid fa-trash"></i></button>' +
                                  '</div>';
                 listEl.appendChild(item);
             });
         }
 
-        function addCustomBoss() {
+        window.addCustomBoss = async function() {
             const nameInput = document.getElementById('newBossName');
             const topInput = document.getElementById('newBossTop');
             const leftInput = document.getElementById('newBossLeft');
@@ -1349,52 +1321,38 @@
                 type: typeVal
             };
 
-            if(typeVal === 'fixed_top') {
-                bossObj.fixedSchedules = [16, 22, 4, 10];
-            } else if(typeVal === 'fixed_bottom') {
-                bossObj.fixedSchedules = [13, 19, 1, 7];
-            } else {
-                bossObj.respawnDuration = 1800;
-                bossObj.deathTimestamp = 0;
-            }
+            if(typeVal === 'fixed_top') bossObj.fixedSchedules = [16, 22, 4, 10];
+            else if(typeVal === 'fixed_bottom') bossObj.fixedSchedules = [13, 19, 1, 7];
+            else { bossObj.respawnDuration = 1800; bossObj.deathTimestamp = 0; }
 
             if(!floorBosses[currentFloor]) floorBosses[currentFloor] = [];
             floorBosses[currentFloor].push(bossObj);
 
             nameInput.value = '';
-            saveToLocalStorage();
-            renderMarkers();
-            updateAdminBossList();
+            await syncToFirebase();
             alert('Boss adicionado com sucesso!');
         }
 
-        function respawnManual(index) {
+        window.respawnManual = async function(index) {
             if(floorBosses[currentFloor] && floorBosses[currentFloor][index]) {
                 floorBosses[currentFloor][index].dead = false;
                 floorBosses[currentFloor][index].deathTimestamp = 0;
-                saveToLocalStorage();
-                renderMarkers();
-                updateAdminBossList();
+                await syncToFirebase();
             }
         }
 
-        function removeBoss(index) {
+        window.removeBoss = async function(index) {
             if(floorBosses[currentFloor]) {
                 floorBosses[currentFloor].splice(index, 1);
-                saveToLocalStorage();
-                renderMarkers();
-                updateAdminBossList();
+                await syncToFirebase();
             }
         }
 
-        function openGlobalTimerModal() {
-            document.getElementById('globalTimerModal').classList.add('open');
-        }
-        function closeGlobalTimerModal() {
-            document.getElementById('globalTimerModal').classList.remove('open');
-        }
+        window.openGlobalTimerModal = function() { document.getElementById('globalTimerModal').classList.add('open'); }
+        window.closeGlobalTimerModal = function() { document.getElementById('globalTimerModal').classList.remove('open'); }
 
-        renderMarkers();
+        // Inicializa a sincronização em tempo real do Firebase ao carregar a página
+        initFirebaseSync();
     </script>
 </body>
 </html>
